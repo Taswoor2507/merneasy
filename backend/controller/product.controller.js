@@ -6,6 +6,7 @@ import ApiFeature from "../utils/apiFeatures.js";
 
 //create a new product ----> admin route
 const createProduct = asyncHandler(async (req, res, next) => {
+  req.body.user = req.user.id;
   const product = await Product.create(req.body);
   res.status(201).json({
     success: true,
