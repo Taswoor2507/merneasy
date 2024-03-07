@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Product from "../model/product.model.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import asyncHandler from "../middleware/asyncHandler.js";
+import ApiFeature from "../utils/apiFeatures.js";
 
 //create a new product ----> admin route
 const createProduct = asyncHandler(async (req, res, next) => {
@@ -14,6 +15,7 @@ const createProduct = asyncHandler(async (req, res, next) => {
 //getProductDetails
 
 const getProductDetails = asyncHandler(async (req, res, next) => {
+  const productCount = await Product.countDocuments();
   const product = await Product.findById(req.params.id);
   if (!product) {
     return next(new ErrorHandler("Product not found", 404));
@@ -21,12 +23,20 @@ const getProductDetails = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     product,
+    productCount,
   });
 });
 
 //get all products
 const getAllProducts = asyncHandler(async (req, res, next) => {
-  const products = await Product.find();
+  let productPerPage = 5;
+  const apiFeature = new ApiFeature(Product.find(), req.query)
+    .search()
+    .filter()
+    .pagination(productPerPage);
+  const products = await apiFeature.query;
+  // console.log(apiFeature);
+
   if (!products) {
     return next(new ErrorHandler("No product found!", 400));
   }
